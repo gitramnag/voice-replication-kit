@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools==75.8.0"]
+requires = ["setuptools==84.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -15,8 +15,8 @@ dependencies = []
 [project.optional-dependencies]
 dev = [
   "jsonschema==4.25.1",
-  "pytest==8.4.2",
-  "setuptools==75.8.0",
+  "pytest==9.0.3",
+  "setuptools==84.0.0",
 ]
 
 [project.scripts]

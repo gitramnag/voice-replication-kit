@@ -129,6 +129,7 @@ def test_clean_room_scripts_isolate_the_editable_install_in_the_clone() -> None:
 
 
 def test_public_tool_lock_is_hash_pinned_and_used_by_ci() -> None:
+    project = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     lock = (ROOT / "configs" / "public-tools-lock.txt").read_text(
         encoding="utf-8"
     )
@@ -137,9 +138,18 @@ def test_public_tool_lock_is_hash_pinned_and_used_by_ci() -> None:
     ]
     assert requirements
     assert "jsonschema==4.25.1" in lock
-    assert "pytest==8.4.2" in lock
+    assert "pytest==9.0.3" in lock
+    assert project.count('"setuptools==84.0.0"') == 2
+    assert "setuptools==84.0.0" in lock
     assert "exceptiongroup==" in lock
     assert "tomli==" in lock
+    assert "--universal --python-version 3.10 --generate-hashes" in lock
+    assert "exceptiongroup==1.3.1 ; python_full_version < '3.11'" in lock
+    assert "tomli==2.5.0 ; python_full_version < '3.11'" in lock
+    assert "rpds-py==0.30.0 ; python_full_version < '3.11'" in lock
+    assert "rpds-py==2026.9.1 ; python_full_version >= '3.11'" in lock
+    assert "typing-extensions==4.16.0 ; python_full_version < '3.13'" in lock
+    assert "colorama==0.4.6 ; sys_platform == 'win32'" in lock
     assert all("==" in requirement for requirement in requirements)
     assert lock.count("--hash=sha256:") >= len(requirements)
 

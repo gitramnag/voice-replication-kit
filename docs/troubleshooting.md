@@ -26,9 +26,10 @@ python3 -m venv .venv
 Input: public source and the development dependency lock. Public output: test
 results. Next: rerun the command that first failed.
 
-### `supply --private-root or VOICE_KIT_PRIVATE_ROOT`
+### `voice-kit: private root: external path is required`
 
-Set one external absolute path and initialise it:
+Set one external absolute path. Use `--private-root`, or set
+`VOICE_KIT_PRIVATE_ROOT`. Then initialise it:
 
 ```powershell
 $env:VOICE_KIT_PRIVATE_ROOT = 'D:\voice-kit-private\demo-voice'
@@ -43,11 +44,11 @@ voice-kit init-private
 Private output: the fixed workspace and marker. Next: rerun the original
 `voice-kit` command.
 
-### `private root must be outside the Git checkout`
+### `voice-kit: private root: path is inside the public project`
 
-Choose a sibling directory, separate drive, or protected storage mount. Do not
-work around the check with a symlink. The resolved path must stay outside the
-public clone or extracted source tree.
+Choose a path outside the public project. You can use a sibling directory,
+separate drive, or protected storage mount. Do not use a symlink into the
+project.
 
 ### `voice-kit: private profile: file is missing or malformed`
 
@@ -66,11 +67,16 @@ profile version. Do not change only the digest.
 Build the matrix again from the private evaluation plan, or supply the correct
 immutable matrix. The message does not print its path or content.
 
-### `voice-kit: INPUT TYPE: input validation failed`
+### `voice-kit: evaluation plan: schema version must be 1`
 
-The named input failed a validation rule that is not safe to print. Validate
-it against the matching public schema. An unexpected software failure is not
-converted to this message and retains its traceback for repair.
+Set `schema_version` to 1. Validate the plan against
+`configs/schemas/evaluation-plan.schema.json`. Do not print the plan content.
+
+### `voice-kit: render inputs: input validation failed`
+
+The render input failed a rule that is not safe to print. Validate the input
+against the matching public schema. The tool does not convert an unexpected
+software failure to this message.
 
 ### `history scan requires a Git worktree`
 
@@ -79,7 +85,7 @@ but a ZIP contains no reachable commit history. Run staged and history audits
 from a complete Git clone. Do not treat a successful tree audit as a history
 audit.
 
-### `refusing non-empty private root without a workspace marker`
+### `voice-kit: private root: input validation failed`
 
 The directory may contain unrelated data. Inspect it. Choose a new empty
 directory unless an authorised operator confirms the content can be moved.
@@ -93,14 +99,14 @@ Run `--mode tree` and `--mode history` from a public-only clone.
 
 ## Profiles and requests
 
-### `reference_file must name one restricted lowercase .wav beneath refs/`
+### `voice-kit: private profile: input validation failed`
 
 Use a direct POSIX-style relative name such as
 `refs/synthetic-neutral.wav`. The actual file belongs under the external
 `upload/refs` directory. Absolute paths, backslashes, nested reference
 directories, and `..` are rejected.
 
-### `private reference does not exist`
+### `voice-kit: private profile: required file is missing`
 
 The profile name and WAV filename differ, or the file is in another directory.
 Compare spelling and case. Keep the reference under `upload/refs`; do not
@@ -112,22 +118,19 @@ Restore the accepted reference bytes if the change was accidental. If the
 change was deliberate, create a new candidate, rerun the affected blind pass,
 and freeze a new profile version. Changing only the digest is not a repair.
 
-### `refusing to replace existing request pack`
+### `voice-kit: production inputs: output already exists`
 
 The file is immutable and the new bytes differ. Preserve it and use a new
 versioned `--output` path beneath the external root.
 
-### `request text exceeds 220 characters`
+### `voice-kit: production inputs: input validation failed`
 
-Build requests with `voice-kit build-requests`, which splits at sentence or
-word boundaries. If one token exceeds the limit, change the private script or
-add an exact pronunciation override before rebuilding.
-
-### `unknown production style`
-
-The document names a style with no profile recipe. Evaluate and add that
-recipe, or correct the document to a supported accepted style. A named style
-does not silently fall back to neutral.
+The private document or profile failed a rule. Build requests with
+`voice-kit build-requests`. It splits text at sentence or word boundaries. If
+one token exceeds the limit, change the private script or add an exact
+pronunciation override. If the document uses an unknown style, add an accepted
+recipe or correct the style. The tool does not use a neutral style as a silent
+fallback.
 
 ## Evaluation
 
@@ -150,6 +153,11 @@ history audits as appropriate. If it was pushed, use the private disclosure
 procedure; deleting the latest copy does not undisclose history.
 
 ## Pinned runtime and rendering
+
+### `voice-kit: render inputs: pinned runtime cannot be verified`
+
+Run the pinned bootstrap in a new external private root. Use the `voice-kit`
+executable in that runtime. Do not install unreviewed packages.
 
 ### Bootstrap refuses an existing CosyVoice source directory
 
@@ -190,14 +198,17 @@ support Blackwell `sm_120` GPUs, including the RTX 50 series, and it does not
 include an AMD GPU runtime. Use a supported GPU. Do not install unreviewed
 packages into the pinned private runtime.
 
-### A full batch requires `--accept-smoke REQUEST_ID`
+### `voice-kit: render inputs: smoke ID is required for a full batch`
 
-Render one item with `--smoke`, listen to its WAV, and take the request ID
-from its successful manifest record. The ID must belong to the same immutable
-request pack. The accepted full batch selects every request in the pack,
-including the smoke request again. Outputs are write-once, so that repeated
-request creates a new collision-safe output and appends another manifest record
-instead of replacing the smoke WAV.
+Render one item with `--smoke`. Listen to its WAV. Take the request ID from its
+successful manifest record. Then give that ID to `--accept-smoke`.
+
+### `voice-kit: render inputs: smoke ID does not match a successful smoke render for this request pack`
+
+Use the request ID from a successful smoke render of the same request pack. Do
+not use an ID from another pack. The full batch selects all requests, including
+the smoke request again. Outputs are write-once. The repeated request creates a
+new output and a new manifest record. It does not replace the smoke WAV.
 
 ### A rerun creates a suffixed WAV
 
@@ -205,7 +216,7 @@ Outputs are write-once. Compare the manifest records and send any candidate
 used for a recipe change back through blind evaluation. Do not replace the
 earlier file.
 
-### `CosyVoice returned no audio`
+### A render has an inference-error result
 
 The backend returned no speech chunks. Preserve the request and failure record,
 then retry that request. If it repeats, verify non-empty text, the reference

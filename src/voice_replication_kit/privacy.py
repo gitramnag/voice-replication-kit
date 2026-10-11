@@ -202,6 +202,7 @@ PERSONAL_PATH_PATTERNS = (
     re.compile(r"(?i)(?<![\w.-])/" "Users" r"/[^/\s]+/"),
     re.compile(r"(?i)(?<![\w.-])/" "mnt" r"/[a-z]/" "Users" r"/[^/\s]+/"),
     re.compile(r"(?i)(?<![\w.-])[a-z]--" "Users" r"-[^-\s]+-"),
+    re.compile(r"(?<![\w.-])~[/\\]"),
 )
 
 APPROVED_EMAILS = {
@@ -383,6 +384,47 @@ PRIVATE_STRUCTURED_KEYS = frozenset(
         "unblinding",
         "voice_embedding",
     }
+)
+PRIVATE_STRUCTURED_TEXT_SUFFIXES = frozenset({".md", ".txt"})
+EMPTY_PRIVATE_STRUCTURED_TEXT_VALUES = frozenset(
+    {"", '""', "''", "[]", "{}", "null", "none", "~"}
+)
+APPROVED_SCHEMA_TEXT_VALUES = frozenset(
+    {
+        ("configs/schemas/example.md", "reference_text", "{ type: string }"),
+        (
+            "evaluation/schemas/example.txt",
+            "record_sha256",
+            "lowercase sha-256 string",
+        ),
+    }
+)
+APPROVED_JSON_SCHEMA_PATHS = frozenset(
+    {
+        "configs/schemas/evaluation-plan.schema.json",
+        "configs/schemas/private-profile.schema.json",
+        "configs/schemas/production-document.schema.json",
+        "configs/schemas/request.schema.json",
+        "evaluation/schemas/scorecard.schema.json",
+    }
+)
+PRIVATE_SCHEMA_VALUE_KEYWORDS = frozenset(
+    {"const", "default", "enum", "example", "examples"}
+)
+PRIVATE_STRUCTURED_KEY_PATTERN = "|".join(
+    re.escape(key) for key in sorted(PRIVATE_STRUCTURED_KEYS)
+)
+PRIVATE_STRUCTURED_LINE_PATTERN = re.compile(
+    r"^[ \t]*(?:>[ \t]*)*(?:[-*+][ \t]+)?(?P<quote>[\"']?)"
+    rf"(?P<key>{PRIVATE_STRUCTURED_KEY_PATTERN})"
+    r"(?P=quote)[ \t]*[:=][ \t]*(?P<value>.*?)[ \t]*$",
+    re.IGNORECASE,
+)
+PRIVATE_STRUCTURED_TABLE_PATTERN = re.compile(
+    r"^[ \t]*\|[ \t]*(?P<quote>[\"']?)"
+    rf"(?P<key>{PRIVATE_STRUCTURED_KEY_PATTERN})"
+    r"(?P=quote)[ \t]*\|[ \t]*(?P<value>[^|]*?)[ \t]*\|(?:.*\|)?[ \t]*$",
+    re.IGNORECASE,
 )
 PRIVATE_WORKFLOW_FILENAMES = frozenset(
     {
@@ -895,14 +937,85 @@ def _contains_private_structured_value(value: object) -> bool:
     return False
 
 
-def _has_private_structured_content(relative: Path, text: str) -> bool:
-    lowered = tuple(part.casefold() for part in relative.parts)
-    if len(lowered) >= 2 and lowered[:2] in {
-        ("configs", "schemas"),
-        ("evaluation", "schemas"),
-    }:
+def _is_populated_private_value(value: object) -> bool:
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, (Mapping, list)):
+        return bool(value)
+    return value is not None
+
+
+def _contains_private_schema_value(
+    value: object,
+    *,
+    property_definitions: bool = False,
+    private_definition: bool = False,
+) -> bool:
+    if isinstance(value, Mapping):
+        if private_definition and any(
+            keyword in value and _is_populated_private_value(value[keyword])
+            for keyword in PRIVATE_SCHEMA_VALUE_KEYWORDS
+        ):
+            return True
+        for raw_key, item in value.items():
+            key = str(raw_key).casefold()
+            if property_definitions and key in PRIVATE_STRUCTURED_KEYS:
+                if not isinstance(item, Mapping):
+                    return _is_populated_private_value(item)
+                if _contains_private_schema_value(item, private_definition=True):
+                    return True
+                continue
+            if key in PRIVATE_STRUCTURED_KEYS and _is_populated_private_value(item):
+                return True
+            if _contains_private_schema_value(
+                item,
+                property_definitions=key == "properties",
+                private_definition=private_definition,
+            ):
+                return True
+    elif isinstance(value, list):
+        return any(
+            _contains_private_schema_value(
+                item, private_definition=private_definition
+            )
+            for item in value
+        )
+    return False
+
+
+def _is_reviewed_json_schema(relative: Path, document: object) -> bool:
+    if relative.as_posix().casefold() not in APPROVED_JSON_SCHEMA_PATHS:
         return False
+    if not isinstance(document, Mapping):
+        return False
+    schema_uri = document.get("$schema")
+    return isinstance(schema_uri, str) and "json-schema.org/" in schema_uri
+
+
+def _has_private_structured_content(relative: Path, text: str) -> bool:
     suffix = relative.suffix.casefold()
+    if suffix in PRIVATE_STRUCTURED_TEXT_SUFFIXES:
+        for line in text.splitlines():
+            match = PRIVATE_STRUCTURED_LINE_PATTERN.fullmatch(line)
+            if match is None:
+                match = PRIVATE_STRUCTURED_TABLE_PATTERN.fullmatch(line)
+            if match is None:
+                continue
+            value = match.group("value").strip()
+            if value.endswith(","):
+                value = value[:-1].rstrip()
+            normalized = value.casefold()
+            approved_schema_value = (
+                relative.as_posix().casefold(),
+                match.group("key").casefold(),
+                normalized,
+            )
+            if (
+                normalized not in EMPTY_PRIVATE_STRUCTURED_TEXT_VALUES
+                and approved_schema_value not in APPROVED_SCHEMA_TEXT_VALUES
+            ):
+                return True
+        return False
     if suffix not in {".json", ".jsonl"}:
         return False
     try:
@@ -912,6 +1025,8 @@ def _has_private_structured_content(relative: Path, text: str) -> bool:
             documents = [json.loads(line) for line in text.splitlines() if line.strip()]
     except json.JSONDecodeError:
         return False
+    if len(documents) == 1 and _is_reviewed_json_schema(relative, documents[0]):
+        return _contains_private_schema_value(documents[0])
     return any(_contains_private_structured_value(document) for document in documents)
 
 
@@ -1024,7 +1139,7 @@ def _scan_entry(
             Finding(
                 "private-structured-content",
                 relative,
-                "JSON contains populated private workflow fields",
+                "text contains populated private workflow fields",
             )
         )
 

@@ -212,7 +212,7 @@ def test_source_archive_supports_the_private_command_journey_from_nested_cwd(
     assert cli.main(["init-private", "--private-root", str(inside)]) == 1
     assert not inside.exists()
     assert (
-        "voice-kit: private root: path is outside the approved private root"
+        "voice-kit: private root: path is inside the public project"
         in capsys.readouterr().err
     )
 

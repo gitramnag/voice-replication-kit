@@ -677,6 +677,8 @@ def test_scan_repository_rejects_spaced_windows_user_profile_paths(
         "Use /mnt/c/" + "Users/ExamplePerson/voice/render.py.\n",
         r'{"path":"C:\\' + r'Users\\ExamplePerson\\voice\\render.py"}',
         "Cache key: c--" + "Users-ExamplePerson-voice-render.py\n",
+        "Use " + "~" + "/voice-private/refs/take-01.wav.\n",
+        "Use " + "~" + "\\voice-private\\refs\\take-01.wav.\n",
     ],
 )
 def test_scan_repository_rejects_additional_user_profile_path_forms(
@@ -743,6 +745,97 @@ def test_scan_repository_rejects_additional_user_profile_path_forms(
                 "utf-8"
             ),
         ),
+        (
+            "docs/notes-matrix.txt",
+            b"reference_text: Synthetic private transcript\n",
+        ),
+        (
+            "docs/notes-matrix.md",
+            b"- reference_sha256 = " + b"e" * 64 + b"\n",
+        ),
+        (
+            "docs/quoted-notes.md",
+            b"> reference_text: Synthetic private transcript\n",
+        ),
+        (
+            "docs/private-table.md",
+            b"| reference_text | Synthetic private transcript |\n",
+        ),
+        (
+            "configs/schemas/populated-example.md",
+            b"reference_text: Synthetic private transcript\n",
+        ),
+        (
+            "configs/schemas/populated-record.json",
+            json.dumps({"reference_text": "Synthetic private transcript"}).encode(
+                "utf-8"
+            ),
+        ),
+        (
+            "configs/schemas/request.schema.json",
+            json.dumps(
+                {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "type": "object",
+                    "properties": {
+                        "reference_text": "Synthetic private transcript"
+                    },
+                }
+            ).encode("utf-8"),
+        ),
+        (
+            "configs/schemas/private-profile.schema.json",
+            json.dumps(
+                {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "type": "object",
+                    "properties": {
+                        "reference_text": {
+                            "type": "string",
+                            "enum": ["Synthetic private transcript"],
+                        }
+                    },
+                }
+            ).encode("utf-8"),
+        ),
+        (
+            "configs/schemas/private-profile.schema.json",
+            json.dumps(
+                {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "type": "object",
+                    "properties": {
+                        "reference_text": {
+                            "allOf": [
+                                {"const": "Synthetic private transcript"}
+                            ]
+                        }
+                    },
+                }
+            ).encode("utf-8"),
+        ),
+        (
+            "configs/schemas/request.schema.json",
+            json.dumps(
+                {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "type": "object",
+                    "properties": {
+                        "reference_sha256": {
+                            "anyOf": [{"enum": ["f" * 64]}]
+                        }
+                    },
+                }
+            ).encode("utf-8"),
+        ),
+        (
+            "docs/non-schema.md",
+            b"reference_text: lowercase SHA-256 string\n",
+        ),
+        (
+            "configs/schemas/example.md",
+            b"record_sha256: { type: string }\n",
+        ),
     ],
 )
 def test_renamed_private_structured_content_is_rejected(
@@ -753,6 +846,36 @@ def test_renamed_private_structured_content_is_rejected(
     )
 
     assert any(item.code == "private-structured-content" for item in findings)
+
+
+@pytest.mark.parametrize(
+    ("path", "data"),
+    [
+        (
+            "docs/guide.md",
+            b"The public guide names `reference_text` without assigning it.\n",
+        ),
+        ("docs/empty.txt", b"reference_text:\n"),
+        (
+            "configs/schemas/example.md",
+            b"reference_text: { type: string }\n",
+        ),
+        (
+            "evaluation/schemas/example.txt",
+            b"record_sha256: lowercase SHA-256 string\n",
+        ),
+        ("docs/quoted-empty.md", b"> reference_text:\n"),
+        ("docs/empty-table.md", b"| reference_text | |\n"),
+    ],
+)
+def test_private_structured_text_rule_accepts_public_safe_forms(
+    path: str, data: bytes
+) -> None:
+    findings = scan_entries(
+        [AuditEntry(PurePosixPath(path), data, "test")], policy()
+    )
+
+    assert findings == []
 
 
 @pytest.mark.parametrize(

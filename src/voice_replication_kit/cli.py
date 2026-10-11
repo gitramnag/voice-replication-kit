@@ -23,6 +23,7 @@ from voice_replication_kit.private_root import (
 )
 from voice_replication_kit.privacy import run_audit
 from voice_replication_kit.requests import build_requests, validate_private_profile
+from voice_replication_kit.runtime import RuntimeVerificationError
 from voice_replication_kit.scoring import build_blind_pack
 
 
@@ -422,14 +423,34 @@ def _safe_validation_message(
         "render": "render inputs",
         "audit": "publication audit",
     }.get(command, "input")
-    text = str(error).casefold()
-    if "reference hash changed" in text:
+    raw_text = str(error)
+    text = raw_text.casefold()
+    if raw_text == "supply --private-root or VOICE_KIT_PRIVATE_ROOT":
+        input_type = "private root"
+        reason = "external path is required"
+    elif raw_text == "private root must be outside the Git checkout":
+        input_type = "private root"
+        reason = "path is inside the public project"
+    elif raw_text == "a full batch requires --accept-smoke REQUEST_ID":
+        reason = "smoke ID is required for a full batch"
+    elif raw_text == "accepted smoke request does not match a successful smoke record":
+        reason = (
+            "smoke ID does not match a successful smoke render for this request pack"
+        )
+    elif (
+        isinstance(error, RuntimeVerificationError)
+        and text.startswith("cannot inspect source checkout:")
+    ):
+        reason = "pinned runtime cannot be verified"
+    elif raw_text == "evaluation plan schema_version must be 1":
+        reason = "schema version must be 1"
+    elif "reference hash changed" in text:
         reason = "reference hash changed"
     elif "cannot read" in text:
         reason = "file is missing or malformed"
     elif "must be a json object" in text:
         reason = "JSON object is required"
-    elif "must resolve beneath" in text or "must be outside" in text:
+    elif "must resolve beneath" in text:
         reason = "path is outside the approved private root"
     elif "refusing to replace" in text or "already exists" in text:
         reason = "output already exists"

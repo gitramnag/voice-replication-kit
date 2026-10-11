@@ -1,13 +1,20 @@
 # Voice Replication Kit
 
-This repository contains a public, speaker-agnostic method for building and
-reusing an authorised CosyVoice 3 voice. It contains no recording, generated
+[![CI](https://github.com/gitramnag/voice-replication-kit/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/gitramnag/voice-replication-kit/actions/workflows/ci.yml)
+
+Build and reuse an authorised replica of your own voice with CosyVoice 3. This
+privacy-first, open-source voice cloning toolkit gives you a reproducible,
+local zero-shot text-to-speech workflow for Windows with WSL2 or Linux.
+
+The public repository is speaker-agnostic. It contains no recording, generated
 speech, populated profile, completed scorecard, model snapshot, or other
 material that can reproduce a particular person.
 
 Keep all voice-bearing work in an external private root. The commands reject a
 private root inside the Git checkout. Read the [privacy boundary](docs/privacy-boundary.md)
 before recording anyone.
+
+[![Create and reuse a private voice replica](docs/assets/voice-replication-studio-journey.png)](docs/assets/voice-replication-studio-journey.svg)
 
 ## The outcome in six steps
 

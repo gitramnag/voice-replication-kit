@@ -58,6 +58,34 @@ def test_only_the_approved_diagram_family_is_published() -> None:
         assert not any(ASSETS.glob(f"{old_slug}.*"))
 
 
+def test_readme_shows_the_approved_png_linked_to_the_svg() -> None:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    preview = (
+        "[![Create and reuse a private voice replica]"
+        "(docs/assets/voice-replication-studio-journey.png)]"
+        "(docs/assets/voice-replication-studio-journey.svg)"
+    )
+    assert preview in readme
+    assert readme.index(preview) < readme.index("## The outcome in six steps")
+
+
+def test_readme_intro_uses_accurate_discovery_terms() -> None:
+    introduction = (ROOT / "README.md").read_text(encoding="utf-8").split(
+        "## The outcome in six steps", 1
+    )[0]
+    for phrase in (
+        "privacy-first",
+        "voice cloning",
+        "CosyVoice 3",
+        "zero-shot text-to-speech",
+        "Windows",
+        "WSL2",
+        "Linux",
+    ):
+        assert phrase in introduction
+    assert "actions/workflows/ci.yml/badge.svg?branch=main" in introduction
+
+
 def test_png_is_native_size_and_contains_no_text_metadata() -> None:
     data = PNG_PATH.read_bytes()
     assert data[:8] == b"\x89PNG\r\n\x1a\n"
