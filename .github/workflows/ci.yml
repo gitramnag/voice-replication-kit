@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install the public tooling
+        run: |
+          python -m pip install --require-hashes -r configs/public-tools-lock.txt
+          python -m pip install --no-build-isolation --no-deps -e .
+
+      - name: Run the test suite
+        run: python -m pytest -q
+
+      - name: Validate public JSON schemas
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          from jsonschema import Draft202012Validator
+
+          schema_paths = sorted(Path("configs/schemas").glob("*.json"))
+          schema_paths += sorted(Path("evaluation/schemas").glob("*.json"))
+          schemas = {
+              path: json.loads(path.read_text(encoding="utf-8"))
+              for path in schema_paths
+          }
+          for schema in schemas.values():
+              Draft202012Validator.check_schema(schema)
+
+          blank = json.loads(
+              Path("evaluation/examples/blank-decisions.json").read_text(
+                  encoding="utf-8"
+              )
+          )
+          scorecard = schemas[Path("evaluation/schemas/scorecard.schema.json")]
+          Draft202012Validator(scorecard).validate(blank)
+          print(f"validated {len(schemas)} schemas and the blank decision file")
+          PY
+
+      - name: Regenerate and compare the public corpus
+        run: |
+          python -m voice_replication_kit.corpus \
+            --source corpus/recording-script.json \
+            --output-dir corpus
+          git diff --exit-code -- corpus
+
+      - name: Check local documentation links
+        run: python scripts/check_links.py --root .
+
+      - name: Check the publication boundary
+        run: python scripts/check_publication.py --root .
+
+  clean-room:
+    name: No-local release audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Rebuild and audit a no-local clone
+        run: bash scripts/clean_room_audit.sh

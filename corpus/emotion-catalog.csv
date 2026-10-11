@@ -1,0 +1,15 @@
+style,label,role,direction
+narration_neutral,Neutral narration,core,"Even pace, clear, unhurried. Explaining something to a competent colleague. No performance, no smile-voice. This is the workhorse and most demo audio will use it."
+warm_friendly,Warm and friendly,core,"Smile naturally while you read. Keep the delivery friendly, slightly slower, slightly lower, with softer breath. Greeting someone you like."
+excited_energetic,Excited and energetic,core,"Genuine enthusiasm, not shouting. Faster, brighter, more pitch movement. Lean forward. Showing someone the thing you are proud of. Keep articulation crisp."
+serious_authoritative,Serious and authoritative,core,"Lower, slower, weightier. Longer pauses. Land on the full stops. Telling someone something that carries consequence. Authority through calm, not force."
+curious_questioning,Curious and questioning,core,"Genuine inquiry, thinking aloud. Let questions actually rise at the end. Never read a question as a statement."
+empathetic_calm,Empathetic and calm,core,"Soft, unhurried, low energy but fully engaged. Quieter than neutral but stay voiced; do not go breathy or whispery. Reassuring someone frustrated."
+emphatic_punchy,Emphatic and punchy,core,"Short sentences, hard stress, real silence between them. Let each full stop breathe about half a second. Deliberate and confident."
+awe_wonder,Awe and wonder,dramatic,"Tell someone plainly about something that genuinely impressed you. Do not sustain the vowels, slow down, go breathy, or become reverent. Keep your ordinary pace and let the words carry the wonder."
+sorrow_grief,Sorrow and grief,dramatic,"Low, slow, slightly unsupported at the ends of phrases, as if the breath is running out. Do not sob or crack deliberately; restrained grief reads as far more real than performed grief."
+anger_fierce,"Anger, fierce",dramatic,"Hard consonants, forward placement, tight throat. Controlled fury rather than yelling: pushed volume clips the mic and reads as thin, whereas clenched intensity reads as dangerous."
+tender_intimate,Tender and intimate,dramatic,"Close, soft, warm, almost confiding. Slower and quieter than empathetic, with more air, as though the listener is right beside you and nobody else can hear."
+suspense_hushed,"Suspense, hushed",dramatic,"Quiet, tight, urgent. Use short breaths and a voiced whisper rather than a true whisper so every word remains clear. Put the tension in the jaw, not the volume."
+playful_wry,Playful and wry,dramatic,"Dry, amused, faintly arch. Let the timing carry the joke rather than the volume. Underplay the punchline; a wry line sold too hard stops being wry."
+triumphant_declaratory,Triumphant and declaratory,dramatic,Pleased and generous - relief and satisfaction rather than a proclamation. Keep the vowels natural and do not project as if speaking to a hall. Think of telling your team it finally shipped.

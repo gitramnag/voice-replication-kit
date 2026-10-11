@@ -1,0 +1,60 @@
+# Local Python state
+.venv/
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Local design and brainstorming sessions
+.superpowers/
+
+# Identity-bearing and private workflow state
+.voice-replication-private.json
+.voice-kit-private-terms
+private/
+speakers/
+profiles/
+results/raw/
+runtime/models/
+runtime/cache/
+upload/refs/
+*.jsonl
+**/unblinding-map.json
+**/evaluation-plan.json
+**/production-script*.json
+**/private-profile*.json
+evaluation/pass-*.xlsx
+!configs/schemas/*.json
+!evaluation/schemas/*.json
+
+# Recordings, generated speech, embeddings and model artifacts
+*.wav
+*.mp3
+*.flac
+*.m4a
+*.aac
+*.ogg
+*.opus
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.npy
+*.npz
+
+# Credentials and local settings
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.token
+
+# Operating-system and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

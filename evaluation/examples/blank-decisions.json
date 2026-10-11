@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "status": "not_started",
+  "decisions": [
+    { "style": "narration_neutral", "selected_blind_label": null, "decision_note": "" },
+    { "style": "warm_friendly", "selected_blind_label": null, "decision_note": "" },
+    { "style": "excited_energetic", "selected_blind_label": null, "decision_note": "" },
+    { "style": "serious_authoritative", "selected_blind_label": null, "decision_note": "" },
+    { "style": "curious_questioning", "selected_blind_label": null, "decision_note": "" },
+    { "style": "empathetic_calm", "selected_blind_label": null, "decision_note": "" },
+    { "style": "emphatic_punchy", "selected_blind_label": null, "decision_note": "" },
+    { "style": "awe_wonder", "selected_blind_label": null, "decision_note": "" },
+    { "style": "sorrow_grief", "selected_blind_label": null, "decision_note": "" },
+    { "style": "anger_fierce", "selected_blind_label": null, "decision_note": "" },
+    { "style": "tender_intimate", "selected_blind_label": null, "decision_note": "" },
+    { "style": "suspense_hushed", "selected_blind_label": null, "decision_note": "" },
+    { "style": "playful_wry", "selected_blind_label": null, "decision_note": "" },
+    { "style": "triumphant_declaratory", "selected_blind_label": null, "decision_note": "" }
+  ]
+}

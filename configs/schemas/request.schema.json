@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/voice-replication-kit/request.schema.json",
+  "title": "Private CosyVoice render request",
+  "description": "A request row generated locally. Files containing real reference data stay beneath private/ and never enter Git.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "prompt_id",
+    "source_segment_id",
+    "unit_index",
+    "style",
+    "language",
+    "text",
+    "seed",
+    "reference_file",
+    "reference_text",
+    "reference_sha256",
+    "reference_text_sha256",
+    "text_shape",
+    "model_revision",
+    "pronunciation_overrides"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "request_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]*__s[0-9]+$"
+    },
+    "prompt_id": { "type": "string", "minLength": 1 },
+    "source_segment_id": { "type": "string", "minLength": 1 },
+    "unit_index": { "type": "integer", "minimum": 1 },
+    "style": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+    "language": { "type": "string", "minLength": 2 },
+    "text": { "type": "string", "minLength": 1, "maxLength": 220 },
+    "seed": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+    "reference_file": {
+      "type": "string",
+      "pattern": "^refs/[A-Za-z0-9][A-Za-z0-9._-]*\\.wav$"
+    },
+    "reference_text": { "type": "string", "pattern": "\\S" },
+    "reference_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "reference_text_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "reference_key": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "text_shape": {
+      "enum": ["short_clause", "connected_sentence", "two_sentences"]
+    },
+    "model_revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "pronunciation_overrides": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    },
+    "candidate_of": { "type": "string", "minLength": 1 },
+    "candidate_index": { "type": "integer", "minimum": 1 },
+    "selection_required": { "type": "boolean" }
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/voice-replication-kit/evaluation-plan.schema.json",
+  "title": "Private voice evaluation plan",
+  "description": "A local plan whose populated prompts, references, transcripts, hashes and seeds stay outside Git.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "experiment_question",
+    "prompts",
+    "references",
+    "seeds",
+    "text_shapes"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "experiment_question": { "type": "string", "pattern": "\\S" },
+    "prompts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "prompt_id",
+          "source_segment_id",
+          "unit_index",
+          "style",
+          "language",
+          "text",
+          "pronunciation_overrides"
+        ],
+        "properties": {
+          "prompt_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]*$"
+          },
+          "source_segment_id": { "type": "string", "pattern": "\\S" },
+          "unit_index": { "type": "integer", "minimum": 1 },
+          "style": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+          "language": {
+            "type": "string",
+            "minLength": 2,
+            "pattern": "\\S"
+          },
+          "text": {
+            "type": "string",
+            "pattern": "\\S",
+            "maxLength": 220
+          },
+          "pronunciation_overrides": {
+            "type": "object",
+            "propertyNames": { "minLength": 1 },
+            "additionalProperties": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "references": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "reference_key",
+          "reference_file",
+          "reference_text",
+          "reference_sha256"
+        ],
+        "properties": {
+          "reference_key": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]*$"
+          },
+          "reference_file": {
+            "type": "string",
+            "pattern": "^refs/[A-Za-z0-9][A-Za-z0-9._-]*\\.wav$"
+          },
+          "reference_text": { "type": "string", "pattern": "\\S" },
+          "reference_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "seeds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 4294967295
+      }
+    },
+    "text_shapes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": ["short_clause", "connected_sentence", "two_sentences"]
+      }
+    }
+  }
+}

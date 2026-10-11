@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/voice-replication-kit/scorecard.schema.json",
+  "title": "Blind listening decisions",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "status", "decisions"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "status": { "enum": ["not_started", "in_progress", "complete"] },
+    "decisions": {
+      "type": "array",
+      "minItems": 14,
+      "maxItems": 14,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["style", "selected_blind_label", "decision_note"],
+        "properties": {
+          "style": {
+            "enum": [
+              "narration_neutral",
+              "warm_friendly",
+              "excited_energetic",
+              "serious_authoritative",
+              "curious_questioning",
+              "empathetic_calm",
+              "emphatic_punchy",
+              "awe_wonder",
+              "sorrow_grief",
+              "anger_fierce",
+              "tender_intimate",
+              "suspense_hushed",
+              "playful_wry",
+              "triumphant_declaratory"
+            ]
+          },
+          "selected_blind_label": {
+            "type": ["string", "null"],
+            "pattern": "^CLIP-[0-9]{3,}$"
+          },
+          "decision_note": { "type": "string" }
+        }
+      }
+    }
+  }
+}

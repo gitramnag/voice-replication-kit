@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/voice-replication-kit/private-profile.schema.json",
+  "title": "Private CosyVoice production profile",
+  "description": "This schema is public; every populated profile, reference transcript, reference filename and hash is private.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "model", "recipes"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "model": { "const": "cosyvoice3" },
+    "recipes": {
+      "type": "object",
+      "minProperties": 1,
+      "required": ["narration_neutral"],
+      "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "reference_file",
+          "reference_text",
+          "reference_sha256",
+          "seed",
+          "text_shape"
+        ],
+        "properties": {
+          "reference_file": {
+            "type": "string",
+            "pattern": "^refs/[A-Za-z0-9][A-Za-z0-9._-]*\\.wav$"
+          },
+          "reference_text": { "type": "string", "pattern": "\\S" },
+          "reference_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "seed": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "text_shape": {
+            "enum": ["short_clause", "connected_sentence", "two_sentences"]
+          }
+        }
+      }
+    }
+  }
+}

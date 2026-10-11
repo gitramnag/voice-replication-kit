@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/voice-replication-kit/production-document.schema.json",
+  "title": "Speaker-agnostic production document",
+  "description": "A production script whose private voice inputs are supplied separately.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "language", "segments"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "title": { "type": "string" },
+    "language": { "type": "string", "pattern": "\\S" },
+    "segments": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "text"],
+        "properties": {
+          "id": { "type": "string", "pattern": "\\S" },
+          "intent": { "type": "string" },
+          "style": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+          "text": { "type": "string", "pattern": "\\S" },
+          "pronunciation_overrides": {
+            "type": "object",
+            "additionalProperties": { "type": "string", "pattern": "\\S" }
+          }
+        }
+      }
+    }
+  }
+}
