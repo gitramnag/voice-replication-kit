@@ -226,7 +226,7 @@ def test_editable_install_clone_passes_the_publication_tree_audit(
     environment = os.environ.copy()
     environment["PYTHONDONTWRITEBYTECODE"] = "1"
     subprocess.run(
-        [sys.executable, "-m", "venv", "--system-site-packages", ".venv"],
+        [sys.executable, "-m", "venv", ".venv"],
         cwd=clone,
         env=environment,
         check=True,
@@ -238,7 +238,30 @@ def test_editable_install_clone_passes_the_publication_tree_audit(
         "Scripts/voice-kit.exe" if os.name == "nt" else "bin/voice-kit"
     )
     subprocess.run(
-        [str(venv_python), "-m", "pip", "install", "--no-deps", "-e", "."],
+        [
+            str(venv_python),
+            "-m",
+            "pip",
+            "install",
+            "--require-hashes",
+            "-r",
+            "configs/public-tools-lock.txt",
+        ],
+        cwd=clone,
+        env=environment,
+        check=True,
+    )
+    subprocess.run(
+        [
+            str(venv_python),
+            "-m",
+            "pip",
+            "install",
+            "--no-build-isolation",
+            "--no-deps",
+            "-e",
+            ".",
+        ],
         cwd=clone,
         env=environment,
         check=True,
